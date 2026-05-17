@@ -1,57 +1,98 @@
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, Image, KeyboardAvoidingView, Platform, ScrollView, Keyboard} from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, Image, KeyboardAvoidingView, Platform } from 'react-native';
+import { loginUsuario } from '../database/database';
+import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function Home() {
-  const [nome, setNome] = useState('');
+export default function Login() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
 
-  function cadastrar() {}
+  async function verificarLogin() {
+    const usuarioLogado =
+      await AsyncStorage.getItem('usuario_logado');
+
+    const usuarioJson =
+      await AsyncStorage.getItem('usuario');
+
+    if (
+      usuarioLogado === 'true' &&
+      usuarioJson
+    ) {
+      const usuario = JSON.parse(usuarioJson);
+
+      if (usuario.tipo === 'proprietario') {
+        router.replace('/proprietario/dashboard');
+      } else {
+        router.replace('/cliente)home');
+      }
+    }
+  }
+
+  useEffect(() => {
+    verificarLogin();
+  }, []);
+
+  async function entrar() {
+  const usuario = await loginUsuario(
+    email.trim().toLowerCase(),
+    senha.trim()
+  );
+
+  if (!usuario) {
+    alert('E-mail ou senha inválidos');
+    return;
+  }
+
+  await AsyncStorage.setItem(
+    'usuario',
+    JSON.stringify(usuario)
+  );
+  await AsyncStorage.setItem('usuario_logado', 'true');
+
+  if (usuario.tipo === 'proprietario') {
+    router.replace('/proprietario/dashboard');
+  } else {
+    router.replace('/cliente/home');
+  }
+}
+
+  async function sair() {
+    await AsyncStorage.removeItem('logado');
+  }
+
 
   return (
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <Image source={require('../assets/onda.png')} style={styles.banner} />
+      <View style={styles.container}>
+        <TextInput
+          style={styles.input}
+          placeholder="Digite seu email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
 
-          <Image source={require('../assets/onda.png')} style={styles.banner} />
+        <TextInput
+          style={styles.input}
+          placeholder="Digite sua senha"
+          value={senha}
+          onChangeText={setSenha}
+          secureTextEntry
+        />
 
-          <View style={styles.container}>
-            <TextInput
-              style={styles.input}
-              placeholder="Digite seu email"
-              value={email}
-              onChangeText={setEmail}
-            />
+        <TouchableOpacity style={styles.botao} onPress={entrar} >
+          <Text style={styles.textoBranco}>Entrar</Text>
+        </TouchableOpacity>
 
-            <TextInput
-              style={styles.input}
-              placeholder="Digite seu nome"
-              value={nome}
-              onChangeText={setNome}
-            />
-
-            <TextInput
-              style={styles.input}
-              placeholder="Digite sua senha"
-              value={senha}
-              onChangeText={setSenha}
-              secureTextEntry
-            />
-
-            <TouchableOpacity
-              style={styles.botao}
-              onPress={cadastrar}
-            >
-              <Text style={styles.textoBranco}>Cadastrar</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => router.push('/login')}>
-              <Text style={styles.link}>Já tem conta? Faça login</Text>
-            </TouchableOpacity>
-          </View>
-      </KeyboardAvoidingView>
+        <TouchableOpacity onPress={() => router.push('/cadastro')}>
+          <Text style={styles.link}>Não tem conta? Cadastre-se</Text>
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 

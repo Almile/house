@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Button, Text, View, StyleSheet, Dimensions, Image } from 'react-native';
 
-export default function App() {
+export default function modal() {
 
 
   return (
