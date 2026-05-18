@@ -112,7 +112,7 @@ export default function Cadastro() {
           <Text style={styles.textoBranco}>Cadastrar</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.push('/index')}>
+        <TouchableOpacity onPress={() => router.push('/')}>
           <Text style={styles.link}>Já tem conta? Faça login</Text>
         </TouchableOpacity>
       </View>

@@ -5,16 +5,15 @@ import { router } from 'expo-router';
 
 export default function Recursos() {
   const [permissaoCamera, solicitarPermissaoCamera] = useCameraPermissions();
-  const [foto, setFoto] = useState('');
+const [fotos, setFotos] = useState([]);
   const cameraRef = useRef(null);
 
-  async function tirarFoto() {
-    if (!cameraRef.current) return;
-    const imagem = await cameraRef.current.takePictureAsync();
+async function tirarFoto() {
+  if (!cameraRef.current) return;
 
-    setFoto(imagem.uri);
-  }
-
+  const imagem = await cameraRef.current.takePictureAsync();
+  setFotos([...fotos, imagem.uri]);
+}
   if (!permissaoCamera) {
     return <View />;
   }
@@ -37,45 +36,48 @@ export default function Recursos() {
   }
 
   return (
-    <View style={styles.container}>
+  <View style={styles.container}>
+    <CameraView
+      ref={cameraRef}
+      style={styles.camera}
+    />
 
-      {foto === '' ? (
-        <>          
+    <Button
+      title="Tirar Foto"
+      onPress={tirarFoto}
+    />
 
-          <CameraView
-            ref={cameraRef}
-            style={styles.camera}
-          />
-          <Button
-            title="Tirar Foto"
-            onPress={tirarFoto}
-          />
+    {fotos.length > 0 && (
+      <>
+        <Text style={{ marginVertical: 10 }}>
+          {fotos.length} foto(s) capturada(s)
+        </Text>
 
-        </>
-      ) : (
+        <Image
+          source={{ uri: fotos[fotos.length - 1] }}
+          style={styles.imagem}
+        />
 
-        <>
-          
-          <Image
-            source={{ uri: foto }}
-            style={styles.imagem}
-          />
-          <Button
-            title="Tirar Outra Foto"
-            onPress={() => setFoto('')}
-          />
-            <Button
-            title="Enviar"
-            onPress={() => router.push({
-            pathname: '/imagem',
-            params: { foto: foto }
-            })}
-          />
-        </>
-      )}
+<Button
+  title="Enviar Fotos"
+  onPress={() =>
+    router.navigate({
+      pathname: '/proprietario/cadastroLocal',
+      params: {
+        fotos: JSON.stringify(fotos),
+      },
+    })
+  }
+/>
 
-    </View>
-  );
+        <Button
+          title="Limpar Fotos"
+          onPress={() => setFotos([])}
+        />
+      </>
+    )}
+  </View>
+);
 }
 
 const styles = StyleSheet.create({

@@ -1,85 +1,177 @@
-import * as Location from 'expo-location';
-import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Button, Text, View, StyleSheet, Dimensions, Image } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import {
+  Text,
+  TouchableOpacity,
+  View,
+  StyleSheet,
+  FlatList,
+  Image,
+  ActivityIndicator,
+} from 'react-native';
+import { router } from 'expo-router';
+import { listarAgendamentosDoUsuario } from '../../database/database';
 
-export default function App() {
-  const [localizacao, setLocalizacao] = useState(null);
+export default function Home() {
+  const [agendamentos, setAgendamentos] = useState([]);
+  const [carregando, setCarregando] = useState(true);
 
-  async function obterLocalizacao() {
-    const { granted } = await Location.requestForegroundPermissionsAsync();
-    if (granted) {
-      const posicao = await Location.getCurrentPositionAsync();
-      setLocalizacao(posicao.coords);
+  useEffect(() => {
+    carregarAgendamentos();
+  }, []);
+
+  async function carregarAgendamentos() {
+    try {
+      setCarregando(true);
+      const dados = await listarAgendamentosDoUsuario();
+      
+      // Filtra apenas o que não foi visitado ou cancelado
+      const pendentes = (dados || []).filter(
+        (item) => item.status !== 'visitado' && item.status !== 'cancelado'
+      );
+
+      setAgendamentos(pendentes);
+    } catch (error) {
+      console.log('Erro ao carregar agendamentos:', error);
+    } finally {
+      setCarregando(false);
     }
+  }
+
+  function renderItem({ item }) {
+    const imovel = item.imoveis || {};
+    const fotoPrincipal = imovel.fotos?.[0] || 'https://images.unsplash.com/photo-1568605114967-8130f3a36994';
+
+    return (
+      <View style={styles.card}>
+        <View style={styles.row}>
+          <Image source={{ uri: fotoPrincipal }} style={styles.imagem} />
+          
+          <View style={styles.infoContainer}>
+            <Text style={styles.titulo} numberOfLines={1}>
+              {imovel.titulo || 'Imóvel'}
+            </Text>
+            <Text style={styles.endereco} numberOfLines={2}>
+              {imovel.endereco || 'Endereço não informado'}
+            </Text>
+            <Text style={styles.data}>
+              📅 {new Date(item.data_visita).toLocaleString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </Text>
+            <TouchableOpacity
+          style={styles.botao}
+          onPress={() =>
+            router.push({
+              pathname: '/cliente/avaliarVisita',
+              params: {
+                agendamento_id: item.id,
+                imovel_id: item.imovel_id,
+                titulo: imovel.titulo,
+              },
+            })
+          }
+        >
+          <Text style={styles.textoBranco}>Marcar como visitado</Text>
+        </TouchableOpacity>
+          </View>
+        </View>
+
+        
+      </View>
+    );
   }
 
   return (
     <View style={styles.container}>
-      <Button title="Obter Localização" onPress={obterLocalizacao} />
-
-      {localizacao && (
-        <View style={styles.mapContainer}>
-          <MapView
-            style={styles.mapa}
-            initialRegion={{
-              latitude: localizacao.latitude,
-              longitude: localizacao.longitude,
-              latitudeDelta: 0.005,
-              longitudeDelta: 0.005,
-            }}
-          >
-            <Marker
-              coordinate={{
-                latitude: localizacao.latitude,
-                longitude: localizacao.longitude,
-              }}
-              description='sssssssssss'
-              title='vocenoafofi'
-              onPress={()=>{console.log("con");router.push('/recursos')}}
-            >
-                <Image 
-                  source={require('../../assets/download.jpg')} 
-                  style={styles.imagemPin} 
-                />
-            </Marker>
-          </MapView>
-        </View>
-      )}
+      {carregando && <ActivityIndicator color="#E76F51" style={{ marginTop: 20 }} />}
+      
+      <FlatList
+        data={agendamentos}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderItem}
+        refreshing={carregando}
+        onRefresh={carregarAgendamentos}
+        ListEmptyComponent={
+          !carregando && <Text style={styles.vazio}>Nenhuma visita agendada.</Text>
+        }
+        contentContainerStyle={styles.listContent}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', alignItems: 'center', paddingTop: 50 },
-  mapContainer: { flex: 1, width: '100%' },
-  mapa: { 
-    width: Dimensions.get('window').width, 
-    height: Dimensions.get('window').height * 0.7 
+  container: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
   },
-  
-  // ESTILOS DO MARCADOR
-  marcadorCustomizado: {
+  listContent: {
+    padding: 16,
+    paddingBottom: 40,
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  row: {
+    flexDirection: 'row',
     alignItems: 'center',
+  },
+  imagem: {
+    width: 120,
+    height: 120,
+    borderRadius: 8,
+    backgroundColor: '#eee',
+  },
+  infoContainer: {
+    flex: 1,
+    marginLeft: 12,
     justifyContent: 'center',
   },
-  imagemPin: {
-    width: 50,
-    height: 50,
-    borderRadius: 25, // Metade da largura/altura para ficar redondo
-    borderWidth: 3,
-    borderColor: 'white', // Dá um destaque em volta da foto
+  titulo: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 4,
   },
-  setaBaixo: {
-    width: 0,
-    height: 0,
-    borderLeftWidth: 10,
-    borderRightWidth: 10,
-    borderTopWidth: 15,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderTopColor: 'white', // Mesma cor da borda da foto
-    marginTop: -3, // Sobe um pouquinho para encostar na foto
+  endereco: {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 6,
+  },
+  data: {
+    fontSize: 13,
+    color: '#E76F51',
+    fontWeight: '600',
+  },
+  botao: {
+    backgroundColor: '#415A77',
+    alignItems: 'center',
+    padding: 8,
+    borderRadius: 8,
+    marginTop: 12,
+  },
+  textoBranco: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  vazio: {
+    textAlign: 'center',
+    marginTop: 40,
+    color: '#999',
+    fontSize: 16,
   },
 });
