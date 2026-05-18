@@ -44,7 +44,7 @@ export default function MapaCliente() {
         return;
       }
 
-      // Adicionado configuração balanceada para evitar timeouts fatais no hardware nativo
+      // Adicionado configuração balanceada contra travamento por satélite demorado
       const posicao = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       });
@@ -53,10 +53,10 @@ export default function MapaCliente() {
         setLocalizacao(posicao.coords);
       }
     } catch (error) {
-      console.log("Erro ao capturar coordenadas do GPS:", error);
+      console.log("Erro ao obter dados de GPS nativo:", error);
       Alert.alert(
-        "Erro de GPS",
-        "Não foi possível obter o sinal do GPS. Verifique se a localização do seu aparelho está ativada."
+        "Erro de Sinal",
+        "Não foi possível obter a sua posição via GPS. Certifique-se de que a localização do aparelho está ativa."
       );
     }
   }
@@ -78,7 +78,7 @@ export default function MapaCliente() {
 
       setImoveis(imoveisComLocalizacao);
     } catch (error) {
-      console.log("Erro ao carregar dados dos imóveis:", error);
+      console.log("Erro ao carregar banco de imóveis:", error);
     } finally {
       setAtualizando(false);
     }
@@ -120,13 +120,14 @@ export default function MapaCliente() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#1B263B" />
-        <Text style={styles.loadingText}>Buscando sua localização...</Text>
+        <Text style={styles.loadingText}>Carregando mapa da região...</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
+      {/* ATENÇÃO: Deixado SEM a propriedade provider={PROVIDER_GOOGLE} de propósito */}
       <MapView
         ref={mapRef}
         style={styles.mapa}
@@ -138,27 +139,27 @@ export default function MapaCliente() {
         }}
         showsUserLocation={false}
       >
-        {/* Marcador de Posição do Usuário */}
+        {/* Marcador do Usuário */}
         <Marker
           coordinate={{
             latitude: localizacao.latitude,
             longitude: localizacao.longitude,
           }}
           title="Você está aqui"
-          description="Sua localização aproximada"
+          description="Sua localização atual"
         >
           <View style={styles.usuarioMarker}>
             <View style={styles.usuarioPonto} />
           </View>
         </Marker>
 
-        {/* Mapeamento Unificado de Imóveis (Sem duplicados na árvore nativa) */}
+        {/* Marcadores de Imóveis Consolidados (Sem duplicações na View) */}
         {imoveis.map((item) => {
           const isVisitado = visitados.includes(item.id);
 
           return (
             <Marker
-              key={`imovel-${item.id}`}
+              key={`imovel-pin-${item.id}`}
               coordinate={{
                 latitude: Number(item.latitude),
                 longitude: Number(item.longitude),
@@ -193,7 +194,7 @@ export default function MapaCliente() {
         })}
       </MapView>
 
-      {/* Botão de Atualização com Feedback Visual */}
+      {/* Botão de Atualizar Tela */}
       <View style={styles.botaoContainer}>
         <Pressable 
           style={({ pressed }) => [styles.botaoAtualizar, pressed && styles.botaoPressionado]} 
@@ -240,7 +241,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: "#E76F51", // Coral do seu app
+    backgroundColor: "#E76F51",
     borderWidth: 3,
     borderColor: "#FFFFFF",
     shadowColor: "#000",
@@ -257,7 +258,7 @@ const styles = StyleSheet.create({
     height: 38,
     borderRadius: 19,
     borderWidth: 3,
-    borderColor: "#1B263B", // Borda com o Navy Principal
+    borderColor: "#1B263B",
     backgroundColor: "#FFF",
   },
   setaBaixo: {
@@ -268,7 +269,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 12,
     borderLeftColor: "transparent",
     borderRightColor: "transparent",
-    borderTopColor: "#1B263B", // Seta combinando com a borda do pin
+    borderTopColor: "#1B263B",
     marginTop: -2,
   },
   botaoContainer: {
@@ -297,7 +298,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#2E7D32", // Verde escuro elegante para visitados
+    backgroundColor: "#2E7D32",
     borderWidth: 3,
     borderColor: "#FFFFFF",
     justifyContent: "center",
