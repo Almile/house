@@ -120,7 +120,6 @@ export default function DetalhesImovel() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      
       {Array.isArray(imovel.fotos) && imovel.fotos.length > 0 ? (
         <ScrollView
           horizontal
@@ -144,7 +143,7 @@ export default function DetalhesImovel() {
           resizeMode="cover"
         />
       )}
-      
+
       <View style={styles.card}>
         <Text style={styles.titulo}>{imovel.titulo}</Text>
 
@@ -176,26 +175,25 @@ export default function DetalhesImovel() {
               }}
             >
               <View style={styles.row}>
-              <Text style={styles.horario}>
-                • {new Date(horario).toLocaleString("pt-BR")}
-              </Text>
-
-              <TouchableOpacity
-                style={[styles.botao, agendando && styles.botaoDesabilitado]}
-                disabled={agendando}
-                onPress={() => handleAgendarVisita(horario)}
-              >
-                <Text style={styles.botaoTexto}>
-                  {agendando ? "Agendando..." : "Agendar >"}
+                <Text style={styles.horario}>
+                  • {new Date(horario).toLocaleString("pt-BR")}
                 </Text>
-              </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.botao, agendando && styles.botaoDesabilitado]}
+                  disabled={agendando}
+                  onPress={() => handleAgendarVisita(horario)}
+                >
+                  <Text style={styles.botaoTexto}>
+                    {agendando ? "Agendando..." : "Agendar >"}
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
           ))
         ) : (
           <Text style={styles.semHorario}>Nenhum horário cadastrado.</Text>
         )}
-        
       </View>
     </ScrollView>
   );
@@ -212,9 +210,9 @@ const styles = StyleSheet.create({
   },
 
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent:'space-between'
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
 
   centralizado: {

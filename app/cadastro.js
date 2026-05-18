@@ -77,6 +77,7 @@ export default function Cadastro() {
           <TextInput
             style={styles.input}
             placeholder="Digite seu email"
+            placeholderTextColor="#1B263B"
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -86,6 +87,7 @@ export default function Cadastro() {
           <TextInput
             style={styles.input}
             placeholder="Digite seu nome"
+            placeholderTextColor="#1B263B"
             value={nome}
             onChangeText={setNome}
           />
@@ -129,6 +131,7 @@ export default function Cadastro() {
           <TextInput
             style={styles.input}
             placeholder="Digite sua senha"
+            placeholderTextColor="#1B263B"
             value={senha}
             onChangeText={setSenha}
             secureTextEntry

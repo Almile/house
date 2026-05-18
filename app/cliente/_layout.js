@@ -59,6 +59,11 @@ export default function Layout() {
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="map" size={size} color={color} />
           ),
+          headerRight: () => (
+            <Pressable onPress={sair} style={{ marginRight: 15 }}>
+              <MaterialIcons name="logout" size={24} color="white" />
+            </Pressable>
+          ),
         }}
       />
 
@@ -70,6 +75,11 @@ export default function Layout() {
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="list" size={size} color={color} />
           ),
+          headerRight: () => (
+            <Pressable onPress={sair} style={{ marginRight: 15 }}>
+              <MaterialIcons name="logout" size={24} color="white" />
+            </Pressable>
+          ),
         }}
       />
 
@@ -79,6 +89,11 @@ export default function Layout() {
           href: null,
           title: "Avaliar Visita",
           headerShown: true,
+          headerRight: () => (
+            <Pressable onPress={sair} style={{ marginRight: 15 }}>
+              <MaterialIcons name="logout" size={24} color="white" />
+            </Pressable>
+          ),
         }}
       />
 
@@ -86,6 +101,11 @@ export default function Layout() {
         name="detalhesImovel"
         options={{
           href: null,
+          headerRight: () => (
+            <Pressable onPress={sair} style={{ marginRight: 15 }}>
+              <MaterialIcons name="logout" size={24} color="white" />
+            </Pressable>
+          ),
         }}
       />
     </Tabs>

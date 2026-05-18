@@ -1,33 +1,33 @@
 import * as Location from "expo-location";
-import { useState,useEffect} from "react";
+import { useState, useEffect } from "react";
 import {
-  Button,
   Text,
   TouchableOpacity,
   View,
   StyleSheet,
   TextInput,
   Image,
+  ScrollView,
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
-import { ScrollView } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-// Adicione no topo do arquivo
+import { supabase } from "../../database/supabase";
+import { MaterialIcons } from "@expo/vector-icons";
 
-import { supabase } from '../../database/supabase';
 export default function CadastroLocal() {
   const [titulo, setTitulo] = useState("");
   const [descricao, setDescricao] = useState("");
   const [preco, setPreco] = useState("");
   const [endereco, setEndereco] = useState("");
-
-  const [comodos, setComodos] = useState(""); // texto livre
-  const [planta, setPlanta] = useState(null); // arquivo da planta
-  const [visitas, setVisitas] = useState(""); // datas e horários em texto
+  const [comodos, setComodos] = useState("");
+  const [planta, setPlanta] = useState(null);
+  const [visitas, setVisitas] = useState("");
   const [localizacao, setLocalizacao] = useState(null);
+
   const { fotos } = useLocalSearchParams();
   const listaFotos = fotos ? JSON.parse(fotos) : [];
+
   async function obterLocalizacao() {
     const { granted } = await Location.requestForegroundPermissionsAsync();
     if (granted) {
@@ -46,6 +46,7 @@ export default function CadastroLocal() {
       setPlanta(resultado.assets[0]);
     }
   }
+
   async function salvarFormulario() {
     const dados = {
       titulo,
@@ -57,17 +58,14 @@ export default function CadastroLocal() {
       planta,
       localizacao,
     };
-
     await AsyncStorage.setItem("cadastro_imovel", JSON.stringify(dados));
   }
 
   async function carregarFormulario() {
     const dadosSalvos = await AsyncStorage.getItem("cadastro_imovel");
-
     if (!dadosSalvos) return;
 
     const dados = JSON.parse(dadosSalvos);
-
     setTitulo(dados.titulo || "");
     setDescricao(dados.descricao || "");
     setPreco(dados.preco || "");
@@ -78,12 +76,10 @@ export default function CadastroLocal() {
     setLocalizacao(dados.localizacao || null);
   }
 
-  
-
   useEffect(() => {
     carregarFormulario();
   }, []);
-  
+
   async function cadastrarProduto() {
     if (!titulo.trim() || !descricao.trim() || !preco.trim()) {
       alert("Preencha título, descrição e preço.");
@@ -93,14 +89,12 @@ export default function CadastroLocal() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-
     if (!user) {
       alert("Usuário não autenticado.");
       return;
     }
 
     const precoNumero = parseFloat(preco.replace(",", "."));
-
     if (isNaN(precoNumero)) {
       alert("Preço inválido.");
       return;
@@ -113,19 +107,11 @@ export default function CadastroLocal() {
         descricao: descricao.trim(),
         preco: precoNumero,
         endereco: endereco.trim(),
-
-        // Campos simplificados em texto
         comodos: comodos.trim(),
         visitas_disponiveis: visitas.trim(),
-
-        // Arquivo da planta
         planta_nome: planta?.name || null,
         planta_uri: planta?.uri || null,
-
-        // Fotos tiradas pela câmera
         fotos: listaFotos,
-
-        // Geolocalização
         latitude: localizacao?.latitude ?? null,
         longitude: localizacao?.longitude ?? null,
       },
@@ -138,8 +124,6 @@ export default function CadastroLocal() {
     }
 
     alert("Imóvel cadastrado com sucesso!");
-
-    // Limpar formulário
     setTitulo("");
     setDescricao("");
     setPreco("");
@@ -149,31 +133,36 @@ export default function CadastroLocal() {
     setPlanta(null);
     setLocalizacao(null);
     await AsyncStorage.removeItem("cadastro_imovel");
-    // Redirecionar
     router.replace("/proprietario/dashboard");
   }
 
   return (
-    <ScrollView>
+    <ScrollView style={styles.background} showsVerticalScrollIndicator={false}>
       <View style={styles.container}>
+        <Text style={styles.tituloPagina}>Anunciar Novo Imóvel</Text>
+
         <TextInput
           style={styles.input}
-          placeholder="Título do imóvel"
+          placeholder="Título do imóvel (ex: Apartamento Vista Mar)"
+          placeholderTextColor="#A0AAB5"
           value={titulo}
           onChangeText={setTitulo}
         />
 
         <TextInput
-          style={[styles.input, { height: 100, textAlignVertical: "top" }]}
-          placeholder="Descrição do imóvel"
+          style={[styles.input, styles.textArea]}
+          placeholder="Descrição detalhada do imóvel"
+          placeholderTextColor="#A0AAB5"
           value={descricao}
           onChangeText={setDescricao}
           multiline
+          textAlignVertical="top"
         />
 
         <TextInput
           style={styles.input}
-          placeholder="Preço"
+          placeholder="Preço (Ex: 450000)"
+          placeholderTextColor="#A0AAB5"
           value={preco}
           onChangeText={setPreco}
           keyboardType="numeric"
@@ -181,7 +170,8 @@ export default function CadastroLocal() {
 
         <TextInput
           style={styles.input}
-          placeholder="Endereço"
+          placeholder="Endereço Completo"
+          placeholderTextColor="#A0AAB5"
           value={endereco}
           onChangeText={setEndereco}
         />
@@ -190,15 +180,19 @@ export default function CadastroLocal() {
           style={styles.botaoSecundario}
           onPress={obterLocalizacao}
         >
-          <Text>Obter Localização</Text>
+          <MaterialIcons name="my-location" size={20} color="#1B263B" />
+          <Text style={styles.textoBotaoSecundario}>
+            Obter Localização por GPS
+          </Text>
         </TouchableOpacity>
 
         {localizacao && (
-          <>
-            <Text>Latitude: {localizacao.latitude}</Text>
-
-            <Text>Longitude: {localizacao.longitude}</Text>
-          </>
+          <View style={styles.badgeLocalizacao}>
+            <MaterialIcons name="check-circle" size={16} color="#E76F51" />
+            <Text style={styles.textoLocalizacao}>
+              Coordenadas registradas com sucesso
+            </Text>
+          </View>
         )}
 
         <TextInput
@@ -210,6 +204,7 @@ export default function CadastroLocal() {
             "- 120 m²\n" +
             "- Piscina"
           }
+          placeholderTextColor="#A0AAB5"
           value={comodos}
           onChangeText={setComodos}
           multiline
@@ -220,10 +215,11 @@ export default function CadastroLocal() {
           style={styles.botaoSecundario}
           onPress={selecionarPlanta}
         >
-          <Text>
+          <MaterialIcons name="architecture" size={20} color="#1B263B" />
+          <Text style={styles.textoBotaoSecundario}>
             {planta
               ? `Planta: ${planta.name}`
-              : "Selecionar planta (imagem ou PDF)"}
+              : "Selecionar Planta (Imagem ou PDF)"}
           </Text>
         </TouchableOpacity>
 
@@ -232,49 +228,50 @@ export default function CadastroLocal() {
           placeholder={
             "Datas e horários disponíveis para visitas:\n" +
             "10/06/2026 - 14:00\n" +
-            "11/06/2026 - 09:30\n" +
-            "12/06/2026 - 16:00"
+            "11/06/2026 - 09:30"
           }
+          placeholderTextColor="#A0AAB5"
           value={visitas}
           onChangeText={setVisitas}
           multiline
           textAlignVertical="top"
         />
 
+        {/* Adicionar Fotos */}
         <TouchableOpacity
           style={styles.botaoSecundario}
           onPress={async () => {
             await salvarFormulario();
-
             router.push({
               pathname: "/proprietario/recursos",
-              params: {
-                fotos: JSON.stringify(listaFotos),
-              },
+              params: { fotos: JSON.stringify(listaFotos) },
             });
           }}
         >
-          <Text>
+          <MaterialIcons name="collections" size={20} color="#1B263B" />
+          <Text style={styles.textoBotaoSecundario}>
             {listaFotos.length > 0
               ? `${listaFotos.length} foto(s) adicionada(s)`
-              : "Adicionar fotos"}
+              : "Adicionar Fotos da Galeria"}
           </Text>
         </TouchableOpacity>
-        <ScrollView horizontal>
-          {listaFotos.map((uri, index) => (
-            <Image
-              key={index}
-              source={{ uri }}
-              style={{
-                width: 100,
-                height: 100,
-                borderRadius: 8,
-                margin: 10,
-              }}
-            />
-          ))}
-        </ScrollView>
-        <TouchableOpacity style={styles.botao} onPress={cadastrarProduto}>
+
+        {listaFotos.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.carrosselFotos}
+          >
+            {listaFotos.map((uri, index) => (
+              <Image key={index} source={{ uri }} style={styles.fotoThumb} />
+            ))}
+          </ScrollView>
+        )}
+
+        <TouchableOpacity
+          style={styles.botaoPrincipal}
+          onPress={cadastrarProduto}
+        >
           <Text style={styles.textoBranco}>Cadastrar Imóvel</Text>
         </TouchableOpacity>
       </View>
@@ -283,65 +280,93 @@ export default function CadastroLocal() {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  background: {
     flex: 1,
-    backgroundColor: "#fff",
-    padding: 20,
-    gap: 20,
+    backgroundColor: "#F8F9FA",
   },
-  banner: {
-    width: "100%",
-    height: 250,
+  container: {
+    padding: 24,
+    gap: 16,
+  },
+  tituloPagina: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#1B263B",
+    marginBottom: 8,
   },
   input: {
     width: "100%",
     padding: 16,
     fontSize: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#818181",
-  },
-  botao: {
-    width: "100%",
-    backgroundColor: "#A17CEB",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 20,
-    padding: 12,
-    borderRadius: 8,
-  },
-  textoBranco: {
-    color: "#FDF9FC",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  link: {
-    fontWeight: "bold",
-    color: "#868686",
+    borderColor: "#E5E5E5",
+    backgroundColor: "#FFFFFF",
+    color: "#333",
   },
   textArea: {
-    minHeight: 120,
+    minHeight: 110,
   },
-
   botaoSecundario: {
+    flexDirection: "row",
     width: "100%",
     padding: 16,
     borderWidth: 1,
-    borderColor: "#A17CEB",
-    borderRadius: 8,
+    borderColor: "#1B263B",
+    borderRadius: 12,
     alignItems: "center",
-    backgroundColor: "#F7F1FF",
+    justifyContent: "center",
+    backgroundColor: "#EDF1F5",
+    gap: 8,
   },
-  camera: {
-    flex: 1,
-    borderRadius: 10,
-    overflow: "hidden",
-    marginBottom: 20,
+  textoBotaoSecundario: {
+    color: "#1B263B",
+    fontWeight: "600",
+    fontSize: 15,
   },
-
-  imagem: {
-    flex: 1,
+  badgeLocalizacao: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FDF0ED",
+    padding: 12,
+    borderRadius: 8,
+    gap: 6,
+    marginTop: -4,
+  },
+  textoLocalizacao: {
+    color: "#E76F51",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  carrosselFotos: {
+    marginTop: 4,
+    flexDirection: "row",
+  },
+  fotoThumb: {
+    width: 90,
+    height: 90,
     borderRadius: 10,
-    marginBottom: 20,
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: "#E5E5E5",
+  },
+  botaoPrincipal: {
+    width: "100%",
+    backgroundColor: "#1B263B",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 16,
+    padding: 18,
+    borderRadius: 12,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+  },
+  textoBranco: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    fontSize: 16,
+    letterSpacing: 0.5,
   },
 });

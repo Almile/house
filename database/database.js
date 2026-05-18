@@ -1,85 +1,68 @@
-import { supabase } from './supabase';
+import { supabase } from "./supabase";
 
-
-export async function cadastrarUsuario(
-  nome,
-  email,
-  senha,
-  tipo = 'cliente'
-) {
+export async function cadastrarUsuario(nome, email, senha, tipo = "cliente") {
   try {
     const { data, error } = await supabase.auth.signUp({
       email,
       password: senha,
     });
-
     if (error) {
-      console.log('Erro ao cadastrar:', error.message);
+      console.log("Erro ao cadastrar:", error.message);
       return false;
     }
 
     const user = data.user;
 
     if (user) {
-      const { error: profileError } = await supabase
-        .from('usuarios')
-        .upsert([
-          {
-            id: user.id,
-            nome,
-            email,
-            tipo,
-          },
-        ]);
+      const { error: profileError } = await supabase.from("usuarios").upsert([
+        {
+          id: user.id,
+          nome,
+          email,
+          tipo,
+        },
+      ]);
 
       if (profileError) {
-        console.log(
-          'Erro ao salvar perfil:',
-          profileError.message
-        );
+        console.log("Erro ao salvar perfil:", profileError.message);
         return false;
       }
     }
     return true;
   } catch (error) {
-    console.log('Erro ao adicionar usuário:', error);
+    console.log("Erro ao adicionar usuário:", error);
     return false;
   }
 }
 
 export async function loginUsuario(email, senha) {
   try {
-    const { data, error } =
-      await supabase.auth.signInWithPassword({
-        email,
-        password: senha,
-      });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password: senha,
+    });
 
     if (error) {
-      console.log('Erro no login:', error.message);
+      console.log("Erro no login:", error.message);
       return null;
     }
 
     const user = data.user;
 
-    const { data: perfil, error: perfilError } =
-      await supabase
-        .from('usuarios')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+    const { data: perfil, error: perfilError } = await supabase
+      .from("usuarios")
+      .select("*")
+      .eq("id", user.id)
+      .single();
 
     if (perfilError) {
-      console.log(
-        'Erro ao buscar perfil:',
-        perfilError.message
-      );
+      console.log("Erro ao buscar perfil:", perfilError.message);
       return null;
     }
 
     return perfil;
   } catch (error) {
-    console.log('Erro no login:', error);
+    console.log("Erro no login:", error);
     return null;
   }
 }
@@ -93,19 +76,19 @@ export async function obterUsuarioAtual() {
     if (!user) return null;
 
     const { data, error } = await supabase
-      .from('usuarios')
-      .select('*')
-      .eq('id', user.id)
+      .from("usuarios")
+      .select("*")
+      .eq("id", user.id)
       .single();
 
     if (error) {
-      console.log('Erro ao obter usuário:', error.message);
+      console.log("Erro ao obter usuário:", error.message);
       return null;
     }
 
     return data;
   } catch (error) {
-    console.log('Erro ao obter usuário atual:', error);
+    console.log("Erro ao obter usuário atual:", error);
     return null;
   }
 }
@@ -115,26 +98,22 @@ export async function logoutUsuario() {
     await supabase.auth.signOut();
     return true;
   } catch (error) {
-    console.log('Erro ao sair:', error);
+    console.log("Erro ao sair:", error);
     return false;
   }
 }
 
 function normalizarHorarios(visitas_disponiveis) {
-  // Se estiver vazio, retorna array vazio
   if (!visitas_disponiveis) {
     return [];
   }
 
-  // Se já for array, normaliza cada item
   if (Array.isArray(visitas_disponiveis)) {
     return visitas_disponiveis
       .map((item) => converterDataParaISO(item))
       .filter(Boolean);
   }
-
-  // Se for texto, separa por quebra de linha, vírgula ou ponto e vírgula
-  if (typeof visitas_disponiveis === 'string') {
+  if (typeof visitas_disponiveis === "string") {
     return visitas_disponiveis
       .split(/\n|,|;/)
       .map((item) => item.trim())
@@ -147,49 +126,43 @@ function normalizarHorarios(visitas_disponiveis) {
 }
 
 function converterDataParaISO(valor) {
-  // Se já estiver em formato ISO ou algo que o Date entende
   const tentativaDireta = new Date(valor);
   if (!isNaN(tentativaDireta.getTime())) {
     return tentativaDireta.toISOString();
   }
 
-  // Formato esperado: dd/mm/yyyy hh:mm
-  const regex =
-    /^(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}):(\d{2}))?$/;
+  const regex = /^(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}):(\d{2}))?$/;
 
   const match = valor.match(regex);
 
   if (!match) {
-    console.log('Data inválida:', valor);
+    console.log("Data inválida:", valor);
     return null;
   }
 
-  const [, dia, mes, ano, hora = '00', minuto = '00'] =
-    match;
+  const [, dia, mes, ano, hora = "00", minuto = "00"] = match;
 
-  // Cria data no horário local
   const data = new Date(
     Number(ano),
     Number(mes) - 1,
     Number(dia),
     Number(hora),
-    Number(minuto)
+    Number(minuto),
   );
 
   if (isNaN(data.getTime())) {
-    console.log('Data inválida:', valor);
+    console.log("Data inválida:", valor);
     return null;
   }
 
   return data.toISOString();
 }
 
-
 export async function cadastrarImovel({
   titulo,
   descricao,
   preco,
-  endereco = '',
+  endereco = "",
   quartos = 0,
   banheiros = 0,
   vagas = 0,
@@ -203,7 +176,7 @@ export async function cadastrarImovel({
     if (!titulo || !descricao || !preco) {
       return {
         sucesso: false,
-        mensagem: 'Preencha os campos obrigatórios.',
+        mensagem: "Preencha os campos obrigatórios.",
       };
     }
 
@@ -214,51 +187,47 @@ export async function cadastrarImovel({
     if (!user) {
       return {
         sucesso: false,
-        mensagem: 'Usuário não autenticado.',
+        mensagem: "Usuário não autenticado.",
       };
     }
 
     const { data, error } = await supabase
-  .from('imoveis')
-  .insert([
-    {
-      proprietario_id: user.id,
-      titulo,
-      descricao,
-      preco: parseFloat(preco),
-      endereco,
-      latitude,
-      longitude,
+      .from("imoveis")
+      .insert([
+        {
+          proprietario_id: user.id,
+          titulo,
+          descricao,
+          preco: parseFloat(preco),
+          endereco,
+          latitude,
+          longitude,
 
-      // Converte texto em array
-      visitas_disponiveis: normalizarHorarios(
-        visitas_disponiveis
-      ),
+          visitas_disponiveis: normalizarHorarios(visitas_disponiveis),
 
-      // Salva a imagem na coluna fotos (jsonb)
-      fotos: imagem ? [imagem] : [],
-    },
-  ])
-  .select()
-  .single();
+          fotos: imagem ? [imagem] : [],
+        },
+      ])
+      .select()
+      .single();
     if (error) {
-      console.log('Erro ao cadastrar imóvel:', error);
+      console.log("Erro ao cadastrar imóvel:", error);
       return {
         sucesso: false,
-        mensagem: 'Erro ao cadastrar imóvel.',
+        mensagem: "Erro ao cadastrar imóvel.",
       };
     }
 
     return {
       sucesso: true,
       dados: data,
-      mensagem: 'Imóvel cadastrado com sucesso!',
+      mensagem: "Imóvel cadastrado com sucesso!",
     };
   } catch (error) {
-    console.log('Erro ao cadastrar imóvel:', error);
+    console.log("Erro ao cadastrar imóvel:", error);
     return {
       sucesso: false,
-      mensagem: 'Erro inesperado ao cadastrar imóvel.',
+      mensagem: "Erro inesperado ao cadastrar imóvel.",
     };
   }
 }
@@ -266,18 +235,18 @@ export async function cadastrarImovel({
 export async function listarImoveis() {
   try {
     const { data, error } = await supabase
-      .from('imoveis')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .from("imoveis")
+      .select("*")
+      .order("created_at", { ascending: false });
 
     if (error) {
-      console.log('Erro ao listar imóveis:', error.message);
+      console.log("Erro ao listar imóveis:", error.message);
       return [];
     }
 
     return data || [];
   } catch (error) {
-    console.log('Erro ao listar imóveis:', error);
+    console.log("Erro ao listar imóveis:", error);
     return [];
   }
 }
@@ -285,19 +254,19 @@ export async function listarImoveis() {
 export async function buscarImovelPorId(id) {
   try {
     const { data, error } = await supabase
-      .from('imoveis')
-      .select('*')
-      .eq('id', id)
+      .from("imoveis")
+      .select("*")
+      .eq("id", id)
       .single();
 
     if (error) {
-      console.log('Erro ao buscar imóvel:', error.message);
+      console.log("Erro ao buscar imóvel:", error.message);
       return null;
     }
 
     return data;
   } catch (error) {
-    console.log('Erro ao buscar imóvel:', error);
+    console.log("Erro ao buscar imóvel:", error);
     return null;
   }
 }
@@ -311,25 +280,19 @@ export async function listarImoveisDoUsuario() {
     if (!user) return [];
 
     const { data, error } = await supabase
-      .from('imoveis')
-      .select('*')
-      .eq('proprietario_id', user.id)
-      .order('created_at', { ascending: false });
+      .from("imoveis")
+      .select("*")
+      .eq("proprietario_id", user.id)
+      .order("created_at", { ascending: false });
 
     if (error) {
-      console.log(
-        'Erro ao listar imóveis do usuário:',
-        error.message
-      );
+      console.log("Erro ao listar imóveis do usuário:", error.message);
       return [];
     }
 
     return data || [];
   } catch (error) {
-    console.log(
-      'Erro ao listar imóveis do usuário:',
-      error
-    );
+    console.log("Erro ao listar imóveis do usuário:", error);
     return [];
   }
 }
@@ -337,47 +300,41 @@ export async function listarImoveisDoUsuario() {
 export async function atualizarImovel(id, dadosAtualizados) {
   try {
     const { data, error } = await supabase
-      .from('imoveis')
+      .from("imoveis")
       .update(dadosAtualizados)
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
     if (error) {
-      console.log('Erro ao atualizar imóvel:', error.message);
+      console.log("Erro ao atualizar imóvel:", error.message);
       return null;
     }
 
     return data;
   } catch (error) {
-    console.log('Erro ao atualizar imóvel:', error);
+    console.log("Erro ao atualizar imóvel:", error);
     return null;
   }
 }
 
 export async function excluirImovel(id) {
   try {
-    const { error } = await supabase
-      .from('imoveis')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from("imoveis").delete().eq("id", id);
 
     if (error) {
-      console.log('Erro ao excluir imóvel:', error.message);
+      console.log("Erro ao excluir imóvel:", error.message);
       return false;
     }
 
     return true;
   } catch (error) {
-    console.log('Erro ao excluir imóvel:', error);
+    console.log("Erro ao excluir imóvel:", error);
     return false;
   }
 }
 
-export async function agendarVisita({
-  imovel_id,
-  data_visita,
-}) {
+export async function agendarVisita({ imovel_id, data_visita }) {
   try {
     const {
       data: { user },
@@ -386,41 +343,41 @@ export async function agendarVisita({
     if (!user) {
       return {
         sucesso: false,
-        mensagem: 'Usuário não autenticado.',
+        mensagem: "Usuário não autenticado.",
       };
     }
 
     const { data, error } = await supabase
-      .from('agendamentos')
+      .from("agendamentos")
       .insert([
         {
           cliente_id: user.id,
           imovel_id,
           data_visita,
-          status: 'pendente',
+          status: "pendente",
         },
       ])
       .select()
       .single();
 
     if (error) {
-      console.log('Erro ao agendar visita:', error.message);
+      console.log("Erro ao agendar visita:", error.message);
       return {
         sucesso: false,
-        mensagem: 'Erro ao agendar visita.',
+        mensagem: "Erro ao agendar visita.",
       };
     }
 
     return {
       sucesso: true,
       dados: data,
-      mensagem: 'Visita agendada com sucesso!',
+      mensagem: "Visita agendada com sucesso!",
     };
   } catch (error) {
-    console.log('Erro ao agendar visita:', error);
+    console.log("Erro ao agendar visita:", error);
     return {
       sucesso: false,
-      mensagem: 'Erro inesperado ao agendar visita.',
+      mensagem: "Erro inesperado ao agendar visita.",
     };
   }
 }
@@ -434,8 +391,9 @@ export async function listarAgendamentosDoUsuario() {
     if (!user) return [];
 
     const { data, error } = await supabase
-      .from('agendamentos')
-      .select(`
+      .from("agendamentos")
+      .select(
+        `
         *,
         imoveis (
           id,
@@ -443,21 +401,19 @@ export async function listarAgendamentosDoUsuario() {
           endereco,
           fotos
         )
-      `)
-      .eq('cliente_id', user.id)
-      .order('data_visita', { ascending: true });
+      `,
+      )
+      .eq("cliente_id", user.id)
+      .order("data_visita", { ascending: true });
 
     if (error) {
-      console.log(
-        'Erro ao listar agendamentos:',
-        error.message
-      );
+      console.log("Erro ao listar agendamentos:", error.message);
       return [];
     }
 
     return data || [];
   } catch (error) {
-    console.log('Erro ao listar agendamentos:', error);
+    console.log("Erro ao listar agendamentos:", error);
     return [];
   }
 }
@@ -465,21 +421,18 @@ export async function listarAgendamentosDoUsuario() {
 export async function cancelarAgendamento(id) {
   try {
     const { error } = await supabase
-      .from('agendamentos')
-      .update({ status: 'cancelado' })
-      .eq('id', id);
+      .from("agendamentos")
+      .update({ status: "cancelado" })
+      .eq("id", id);
 
     if (error) {
-      console.log(
-        'Erro ao cancelar agendamento:',
-        error.message
-      );
+      console.log("Erro ao cancelar agendamento:", error.message);
       return false;
     }
 
     return true;
   } catch (error) {
-    console.log('Erro ao cancelar agendamento:', error);
+    console.log("Erro ao cancelar agendamento:", error);
     return false;
   }
 }
@@ -498,13 +451,12 @@ export async function salvarAvaliacaoVisita({
     if (!user) {
       return {
         sucesso: false,
-        mensagem: 'Usuário não autenticado.',
+        mensagem: "Usuário não autenticado.",
       };
     }
 
-    // Salva a avaliação
     const { data, error } = await supabase
-      .from('avaliacoes_visita')
+      .from("avaliacoes_visita")
       .insert([
         {
           agendamento_id,
@@ -518,47 +470,36 @@ export async function salvarAvaliacaoVisita({
       .single();
 
     if (error) {
-      console.log(
-        'Erro ao salvar avaliação:',
-        error.message
-      );
+      console.log("Erro ao salvar avaliação:", error.message);
 
       return {
         sucesso: false,
-        mensagem: 'Erro ao salvar avaliação.',
+        mensagem: "Erro ao salvar avaliação.",
       };
     }
 
-    // Atualiza o status do agendamento para "visitado"
     const { error: updateError } = await supabase
-      .from('agendamentos')
+      .from("agendamentos")
       .update({
-        status: 'visitado',
+        status: "visitado",
       })
-      .eq('id', agendamento_id);
+      .eq("id", agendamento_id);
 
     if (updateError) {
-      console.log(
-        'Erro ao atualizar agendamento:',
-        updateError.message
-      );
+      console.log("Erro ao atualizar agendamento:", updateError.message);
     }
 
     return {
       sucesso: true,
       dados: data,
-      mensagem: 'Avaliação salva com sucesso!',
+      mensagem: "Avaliação salva com sucesso!",
     };
   } catch (error) {
-    console.log(
-      'Erro inesperado ao salvar avaliação:',
-      error
-    );
+    console.log("Erro inesperado ao salvar avaliação:", error);
 
     return {
       sucesso: false,
-      mensagem:
-        'Erro inesperado ao salvar avaliação.',
+      mensagem: "Erro inesperado ao salvar avaliação.",
     };
   }
 }
@@ -571,8 +512,9 @@ export async function listarVisitasVisitadas() {
   if (!user) return [];
 
   const { data, error } = await supabase
-    .from('agendamentos')
-    .select(`
+    .from("agendamentos")
+    .select(
+      `
       id,
       data_visita,
       status,
@@ -587,10 +529,11 @@ export async function listarVisitasVisitadas() {
         comentario,
         fotos
       )
-    `)
-    .eq('cliente_id', user.id)
-    .eq('status', 'visitado')
-    .order('data_visita', { ascending: false });
+    `,
+    )
+    .eq("cliente_id", user.id)
+    .eq("status", "visitado")
+    .order("data_visita", { ascending: false });
 
   if (error) {
     console.log(error.message);
@@ -601,15 +544,17 @@ export async function listarVisitasVisitadas() {
 }
 
 export async function listarImoveisVisitadosDoUsuario() {
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) return [];
 
   const { data, error } = await supabase
-    .from('agendamentos')
-    .select('imovel_id')
-    .eq('cliente_id', user.id)
-    .eq('status', 'visitado');
+    .from("agendamentos")
+    .select("imovel_id")
+    .eq("cliente_id", user.id)
+    .eq("status", "visitado");
 
   if (error) {
     console.log(error.message);

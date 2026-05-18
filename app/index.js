@@ -63,52 +63,53 @@ export default function Login() {
   }
 
   return (
-<View style={{ flex: 1 }}>
-  
-  <Image source={require('../assets/fundo.jpg')} style={styles.fundo} />
+    <View style={{ flex: 1 }}>
+      <Image source={require("../assets/fundo.jpg")} style={styles.fundo} />
 
-  <KeyboardAvoidingView
-    style={{ flex: 1 }}
-    behavior={Platform.OS === "ios" ? "padding" : "height"}
-  >
-      <View style={styles.container}>
-        <Image source={require('../assets/logo.png')} style={styles.logo} />
-        <TextInput
-          style={styles.input}
-          placeholder="Digite seu email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <View style={styles.container}>
+          <Image source={require("../assets/logo.png")} style={styles.logo} />
+          <TextInput
+            style={styles.input}
+            placeholder="Digite seu email"
+            placeholderTextColor="#1B263B"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Digite sua senha"
-          value={senha}
-          onChangeText={setSenha}
-          secureTextEntry
-        />
+          <TextInput
+            style={styles.input}
+            placeholder="Digite sua senha"
+            placeholderTextColor="#1B263B"
+            value={senha}
+            onChangeText={setSenha}
+            secureTextEntry
+          />
 
-        <TouchableOpacity style={styles.botao} onPress={entrar}>
-          <Text style={styles.textoBranco}>Entrar</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.botao} onPress={entrar}>
+            <Text style={styles.textoBranco}>Entrar</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.push("/cadastro")}>
-          <Text style={styles.link}>Não tem conta? Cadastre-se</Text>
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+          <TouchableOpacity onPress={() => router.push("/cadastro")}>
+            <Text style={styles.link}>Não tem conta? Cadastre-se</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-    fundo:{
-    position:'absolute',
-    width:'100%',
-    height:'100%',
+  fundo: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
   },
   container: {
     flex: 1,
@@ -118,12 +119,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     gap: 20,
   },
-logo: {
-  width: '80%',
-  height: 180,
-  resizeMode: "contain",
-  marginBottom: 20,
-},
+  logo: {
+    width: "80%",
+    height: 180,
+    resizeMode: "contain",
+    marginBottom: 20,
+  },
   banner: {
     width: "100%",
     height: 250,

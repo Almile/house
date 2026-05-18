@@ -24,7 +24,6 @@ export default function Home() {
       setCarregando(true);
       const dados = await listarAgendamentosDoUsuario();
       
-      // Filtra apenas o que não foi visitado ou cancelado
       const pendentes = (dados || []).filter(
         (item) => item.status !== 'visitado' && item.status !== 'cancelado'
       );
