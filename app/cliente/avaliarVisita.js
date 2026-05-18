@@ -1,5 +1,3 @@
-// app/avaliar-visita.jsx
-
 import {
   CameraView,
   useCameraPermissions,
@@ -7,7 +5,7 @@ import {
 import { useRef, useState } from 'react';
 import {
   Alert,
-  Button,
+  ActivityIndicator,
   Image,
   ScrollView,
   StyleSheet,
@@ -21,6 +19,7 @@ import {
   useLocalSearchParams,
 } from 'expo-router';
 import { salvarAvaliacaoVisita } from '../../database/database';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function AvaliarVisita() {
   const { agendamento_id, titulo } =
@@ -42,10 +41,12 @@ export default function AvaliarVisita() {
   async function tirarFoto() {
     if (!cameraRef.current) return;
 
-    const imagem =
-      await cameraRef.current.takePictureAsync();
-
-    setFotos((prev) => [...prev, imagem.uri]);
+    try {
+        const imagem = await cameraRef.current.takePictureAsync();
+        setFotos((prev) => [...prev, imagem.uri]);
+    } catch (error) {
+        Alert.alert('Erro', 'Não foi possível capturar a foto.');
+    }
   }
 
   async function salvarAvaliacao() {
@@ -70,16 +71,11 @@ export default function AvaliarVisita() {
 
       Alert.alert(
         'Sucesso',
-        'Avaliação salva com sucesso!'
+        'Avaliação salva com sucesso!',
+        [{ text: 'OK', onPress: () => router.replace('/cliente/lista') }]
       );
 
-      router.replace('/cliente/lista');
     } catch (error) {
-      console.log(
-        'Erro ao salvar avaliação:',
-        error
-      );
-
       Alert.alert(
         'Erro',
         'Não foi possível salvar a avaliação.'
@@ -90,128 +86,121 @@ export default function AvaliarVisita() {
   }
 
   if (!permissaoCamera) {
-    return <View />;
+    return (
+        <View style={styles.centralizado}>
+            <ActivityIndicator size="large" color="#1B263B" />
+        </View>
+    );
   }
 
   if (!permissaoCamera.granted) {
     return (
       <View style={styles.centralizado}>
-        <Text style={styles.texto}>
-          Permissão da câmera necessária.
+        <MaterialIcons name="camera-alt" size={60} color="#6C63FF" style={{ marginBottom: 20 }} />
+        <Text style={styles.textoPermissao}>
+          Permissão da câmera necessária para capturar os registros da visita.
         </Text>
 
-        <Button
-          title="Permitir câmera"
+        <TouchableOpacity
+          style={styles.botaoPermissao}
           onPress={solicitarPermissaoCamera}
-        />
+        >
+          <Text style={styles.botaoTexto}>Permitir câmera</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.titulo}>
-        Avaliar Visita
-      </Text>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Text style={styles.subtitulo}>{titulo || 'Imóvel'}</Text>
 
-      <Text style={styles.subtitulo}>
-        {titulo || 'Imóvel'}
-      </Text>
+      <View style={styles.card}>
+        <Text style={styles.label}>Fotos da visita</Text>
+        <View style={styles.cameraContainer}>
+          <CameraView
+            ref={cameraRef}
+            style={styles.camera}
+          />
+        </View>
 
-      <Text style={styles.label}>
-        Fotos da visita
-      </Text>
+        <TouchableOpacity
+          style={styles.botaoSecundario}
+          onPress={tirarFoto}
+        >
+          <MaterialIcons name="photo-camera" size={20} color="#FFF" style={{ marginRight: 8 }} />
+          <Text style={styles.botaoTextoSecundario}>Tirar Foto</Text>
+        </TouchableOpacity>
 
-      <View style={styles.cameraContainer}>
-        <CameraView
-          ref={cameraRef}
-          style={styles.camera}
+        {fotos.length > 0 && (
+          <View style={styles.previewContainer}>
+            <Text style={styles.labelSecundario}>
+                <MaterialIcons name="check-circle" size={16} color="#2D6A4F" />{' '}
+                {fotos.length} foto(s) capturada(s)
+            </Text>
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ marginTop: 10 }}
+            >
+              {fotos.map((foto, index) => (
+                <Image
+                  key={index}
+                  source={{ uri: foto }}
+                  style={styles.preview}
+                />
+              ))}
+            </ScrollView>
+          </View>
+        )}
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.label}>Nível de interesse</Text>
+        <View style={styles.estrelas}>
+          {[1, 2, 3, 4, 5].map((valor) => (
+            <TouchableOpacity
+              key={valor}
+              onPress={() => setInteresse(valor)}
+              style={styles.estrelaWrapper}
+            >
+              <MaterialIcons
+                name={valor <= interesse ? 'star' : 'star-border'}
+                size={40}
+                color={valor <= interesse ? '#F5B301' : '#DDD'}
+              />
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.label}>O que você achou?</Text>
+        <TextInput
+          style={styles.input}
+          multiline
+          numberOfLines={5}
+          placeholder="Descreva sua experiência na visita..."
+          value={comentario}
+          onChangeText={setComentario}
+          placeholderTextColor="#999"
         />
       </View>
 
       <TouchableOpacity
-        style={styles.botaoSecundario}
-        onPress={tirarFoto}
-      >
-        <Text style={styles.botaoTexto}>
-          Tirar Foto
-        </Text>
-      </TouchableOpacity>
-
-      {fotos.length > 0 && (
-        <>
-          <Text style={styles.label}>
-            {fotos.length} foto(s)
-            capturada(s)
-          </Text>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={{ marginBottom: 20 }}
-          >
-            {fotos.map((foto, index) => (
-              <Image
-                key={index}
-                source={{ uri: foto }}
-                style={styles.preview}
-              />
-            ))}
-          </ScrollView>
-        </>
-      )}
-
-      <Text style={styles.label}>
-        Nível de interesse
-      </Text>
-
-      <View style={styles.estrelas}>
-        {[1, 2, 3, 4, 5].map((valor) => (
-          <TouchableOpacity
-            key={valor}
-            onPress={() =>
-              setInteresse(valor)
-            }
-          >
-            <Text
-              style={[
-                styles.estrela,
-                valor <= interesse &&
-                  styles.estrelaAtiva,
-              ]}
-            >
-              ★
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <Text style={styles.label}>
-        O que você achou?
-      </Text>
-
-      <TextInput
-        style={styles.input}
-        multiline
-        numberOfLines={5}
-        placeholder="Descreva sua experiência na visita..."
-        value={comentario}
-        onChangeText={setComentario}
-      />
-
-      <TouchableOpacity
         style={[
           styles.botaoPrincipal,
-          salvando && { opacity: 0.6 },
+          salvando && { backgroundColor: '#415A77' }, // Cor secundária ao salvar
         ]}
         disabled={salvando}
         onPress={salvarAvaliacao}
       >
-        <Text style={styles.botaoTexto}>
-          {salvando
-            ? 'Salvando...'
-            : 'Salvar Avaliação'}
-        </Text>
+        {salvando ? (
+            <ActivityIndicator size="small" color="#FFF" />
+        ) : (
+            <Text style={styles.botaoTexto}>Salvar Avaliação</Text>
+        )}
       </TouchableOpacity>
     </ScrollView>
   );
@@ -220,102 +209,137 @@ export default function AvaliarVisita() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF',
-    padding: 20,
+    backgroundColor: '#F8F9FA',
   },
-
+  content: {
+    padding: 20,
+    paddingBottom: 40,
+  },
   centralizado: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 24,
+    backgroundColor: '#F8F9FA',
   },
-
-  texto: {
+  textoPermissao: {
     fontSize: 16,
-    marginBottom: 16,
+    color: '#1B263B',
+    marginBottom: 24,
+    textAlign: 'center',
+    lineHeight: 22,
   },
-
+  botaoPermissao: {
+    backgroundColor: '#E76F51',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
   titulo: {
     fontSize: 28,
     fontWeight: 'bold',
+    color: '#1B263B',
     marginBottom: 6,
   },
-
   subtitulo: {
-    fontSize: 18,
-    color: '#666',
+    fontSize: 20,
+    color: '#1B263B',
     marginBottom: 24,
+    fontWeight:'bold',
+    textAlign:'center'
   },
-
+  card: {
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
   label: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 10,
-  },
-
-  cameraContainer: {
-    height: 300,
-    borderRadius: 12,
-    overflow: 'hidden',
+    color: '#1B263B',
     marginBottom: 12,
   },
-
+  labelSecundario: {
+    fontSize: 14,
+    color: '#2D6A4F',
+    fontWeight: '600',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cameraContainer: {
+    height: 250,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 16,
+    borderWidth: 2,
+    borderColor: '#E5E5E5',
+  },
   camera: {
     flex: 1,
   },
-
-  preview: {
-    width: 100,
-    height: 100,
-    borderRadius: 10,
-    marginRight: 10,
+  previewContainer: {
+    marginTop: 10,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#EEEEEE',
   },
-
+  preview: {
+    width: 90,
+    height: 90,
+    borderRadius: 10,
+    marginRight: 12,
+    backgroundColor: '#EEE',
+  },
   estrelas: {
     flexDirection: 'row',
-    marginBottom: 20,
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    marginBottom: 8,
   },
-
-  estrela: {
-    fontSize: 36,
-    color: '#DDD',
-    marginRight: 8,
+  estrelaWrapper: {
+    padding: 5,
   },
-
-  estrelaAtiva: {
-    color: '#F5B301',
-  },
-
   input: {
     borderWidth: 1,
-    borderColor: '#DDD',
-    borderRadius: 12,
-    padding: 12,
+    borderColor: '#E5E5E5',
+    borderRadius: 10,
+    padding: 14,
     minHeight: 120,
     textAlignVertical: 'top',
-    marginBottom: 24,
+    fontSize: 15,
+    color: '#333',
+    backgroundColor: '#F9F9F9',
   },
-
   botaoPrincipal: {
-    backgroundColor: '#A17CEB',
+    backgroundColor: '#E76F51',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 10,
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 20,
   },
-
   botaoSecundario: {
-    backgroundColor: '#6C63FF',
+    flexDirection: 'row',
+    backgroundColor: '#1B263B',
     padding: 14,
     borderRadius: 10,
     alignItems: 'center',
-    marginBottom: 20,
+    justifyContent: 'center',
   },
-
   botaoTexto: {
     color: '#FFF',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  botaoTextoSecundario: {
+    color: '#FFF',
+    fontWeight: '600',
+    fontSize: 15,
   },
 });

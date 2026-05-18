@@ -63,12 +63,16 @@ export default function Login() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <Image source={require("../assets/onda.png")} style={styles.banner} />
+<View style={{ flex: 1 }}>
+  
+  <Image source={require('../assets/fundo.jpg')} style={styles.fundo} />
+
+  <KeyboardAvoidingView
+    style={{ flex: 1 }}
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+  >
       <View style={styles.container}>
+        <Image source={require('../assets/logo.png')} style={styles.logo} />
         <TextInput
           style={styles.input}
           placeholder="Digite seu email"
@@ -96,18 +100,30 @@ export default function Login() {
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+    fundo:{
+    position:'absolute',
+    width:'100%',
+    height:'100%',
+  },
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#ffffff00",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 20,
     gap: 20,
   },
+logo: {
+  width: '80%',
+  height: 180,
+  resizeMode: "contain",
+  marginBottom: 20,
+},
   banner: {
     width: "100%",
     height: 250,
@@ -115,14 +131,15 @@ const styles = StyleSheet.create({
   input: {
     width: "100%",
     padding: 16,
-    fontSize: 16,
+    fontSize: 20,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#818181",
+    borderColor: "#1B263B",
+    backgroundColor: "#ffffff50",
   },
   botao: {
     width: "100%",
-    backgroundColor: "#A17CEB",
+    backgroundColor: "#E76F51",
     alignItems: "center",
     justifyContent: "center",
     marginTop: 20,
@@ -132,7 +149,7 @@ const styles = StyleSheet.create({
   textoBranco: {
     color: "#FDF9FC",
     fontWeight: "bold",
-    fontSize: 16,
+    fontSize: 20,
   },
   link: {
     fontWeight: "bold",

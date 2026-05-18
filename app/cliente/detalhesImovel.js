@@ -83,7 +83,7 @@ export default function DetalhesImovel() {
   if (carregando) {
     return (
       <View style={styles.centralizado}>
-        <ActivityIndicator size="large" color="#A17CEB" />
+        <ActivityIndicator size="large" color="#1B263B" />
         <Text style={styles.textoCarregando}>Carregando imóvel...</Text>
       </View>
     );
@@ -161,9 +161,6 @@ export default function DetalhesImovel() {
         ) : null}
       </View>
 
-
-
-      {/* Card de horários disponíveis */}
       <View style={styles.card}>
         <Text style={styles.subtitulo}>Horários disponíveis</Text>
 
@@ -175,9 +172,10 @@ export default function DetalhesImovel() {
                 marginBottom: 16,
                 paddingBottom: 16,
                 borderBottomWidth: 1,
-                borderBottomColor: "#EEE",
+                borderBottomColor: "#e7e7e7",
               }}
             >
+              <View style={styles.row}>
               <Text style={styles.horario}>
                 • {new Date(horario).toLocaleString("pt-BR")}
               </Text>
@@ -188,14 +186,16 @@ export default function DetalhesImovel() {
                 onPress={() => handleAgendarVisita(horario)}
               >
                 <Text style={styles.botaoTexto}>
-                  {agendando ? "Agendando..." : "Agendar este horário"}
+                  {agendando ? "Agendando..." : "Agendar >"}
                 </Text>
               </TouchableOpacity>
+              </View>
             </View>
           ))
         ) : (
           <Text style={styles.semHorario}>Nenhum horário cadastrado.</Text>
         )}
+        
       </View>
     </ScrollView>
   );
@@ -209,6 +209,12 @@ const styles = StyleSheet.create({
 
   content: {
     paddingBottom: 40,
+  },
+
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent:'space-between'
   },
 
   centralizado: {
@@ -252,7 +258,7 @@ const styles = StyleSheet.create({
   preco: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#A17CEB",
+    color: "#1B263B",
     marginBottom: 12,
   },
 
@@ -286,9 +292,9 @@ const styles = StyleSheet.create({
   },
 
   horario: {
-    fontSize: 15,
+    fontSize: 16,
     color: "#444",
-    marginBottom: 8,
+    marginBottom: 6,
   },
 
   semHorario: {
@@ -297,10 +303,7 @@ const styles = StyleSheet.create({
   },
 
   botao: {
-    backgroundColor: "#A17CEB",
     margin: 16,
-    padding: 16,
-    borderRadius: 12,
     alignItems: "center",
   },
 
@@ -309,11 +312,11 @@ const styles = StyleSheet.create({
   },
 
   botaoTexto: {
-    color: "#FFF",
+    color: "#E76F51",
     fontWeight: "bold",
-    fontSize: 18,
+    fontSize: 16,
   },
-  // Adicione estes estilos ao StyleSheet
+
   carrossel: {
     marginHorizontal: 16,
     marginTop: 16,
@@ -321,7 +324,7 @@ const styles = StyleSheet.create({
   },
 
   imagemCarrossel: {
-    width: 360, // pode trocar por Dimensions.get('window').width - 32
+    width: 360,
     height: 240,
     borderRadius: 16,
     marginRight: 12,

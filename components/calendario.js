@@ -3,7 +3,7 @@
 import * as Calendar from "expo-calendar";
 import { Alert } from "react-native";
 
-export default async function salvarVisitaNoCalendario({
+export async function salvarVisitaNoCalendario({
   titulo,
   data_visita,
   endereco,

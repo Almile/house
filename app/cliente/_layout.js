@@ -24,7 +24,7 @@ export default function Layout() {
     }
   }
 
-return (
+  return (
     <Tabs
       screenOptions={{
         headerTintColor: "#fff",
@@ -32,11 +32,9 @@ return (
         headerStyle: { backgroundColor: "#1B263B" },
         tabBarActiveTintColor: "#E76F51",
         tabBarInactiveTintColor: "#415A77",
-        tabBarStyle: { backgroundColor: "#FFFFFF" }
-  }}
->
-    
-      {/* TELAS VISÍVEIS NO MENU */}
+        tabBarStyle: { backgroundColor: "#FFFFFF" },
+      }}
+    >
       <Tabs.Screen
         name="home"
         options={{
@@ -75,20 +73,19 @@ return (
         }}
       />
 
-      {/* TELAS ESCONDIDAS DO MENU */}
       <Tabs.Screen
-        name="avaliarVisita" // Nome do arquivo que está na pasta tabs
+        name="avaliarVisita"
         options={{
-          href: null, // ISSO ESCONDE O BOTÃO DO MENU
+          href: null,
           title: "Avaliar Visita",
-          headerShown: true, // Se quiser que o cabeçalho apareça
+          headerShown: true,
         }}
       />
 
       <Tabs.Screen
         name="detalhesImovel"
         options={{
-          href: null, // Também fica invisível no menu
+          href: null,
         }}
       />
     </Tabs>

@@ -98,7 +98,7 @@ export default function Lista() {
         </ScrollView>
       </View>
 
-      {carregando && <ActivityIndicator color="#1B263B" style={{ marginTop: 20 }} />}
+      {carregando && <ActivityIndicator color="#E76F51" style={{ marginTop: 20 }} />}
 
       <FlatList
         data={filtrados}
@@ -137,12 +137,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   filtroAtivo: {
-    backgroundColor: '#1B263B',
-    borderColor: '#1B263B',
+    backgroundColor: '#E76F51',
+    borderColor: '#E76F51',
   },
   filtroTexto: {
     fontSize: 14,
-    color: '#666',
+    color: '#E76F51',
   },
   filtroTextoAtivo: {
     color: '#fff',
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
   },
   notaBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: '#FFF8E1',
+    backgroundColor: '#fff7f5',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
