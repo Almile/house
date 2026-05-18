@@ -17,13 +17,17 @@
       "supportsTablet": true
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/icone.png",
-        "backgroundColor": "#1B263B"
-      },
-      "edgeToEdgeEnabled": true,
-      "package": "com.almile.house"
-    },
+  "adaptiveIcon": {
+    "foregroundImage": "./assets/icone.png",
+    "backgroundColor": "#1B263B"
+  },
+  "edgeToEdgeEnabled": true,
+  "package": "com.almile.house",
+  "config": {
+    "googleMapsApiKey": "" 
+  }
+},
+
     "web": {
       "favicon": "./assets/icone.png"
     },
