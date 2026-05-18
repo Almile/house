@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/icone.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#1B263B"
     },
     "ios": {
       "supportsTablet": true
@@ -19,7 +19,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/icone.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#1B263B"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.almile.house"
@@ -28,7 +28,19 @@
       "favicon": "./assets/icone.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Permita que o House Hunt acesse sua localização para mapear e encontrar imóveis próximos."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Permita que o House Hunt acesse sua câmera para capturar fotos dos imóveis cadastrados."
+        }
+      ]
     ],
     "extra": {
       "router": {},
