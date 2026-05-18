@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Dimensions,
-  Image,
   Pressable,
   StyleSheet,
   Text,
@@ -44,7 +43,6 @@ export default function MapaCliente() {
         return;
       }
 
-      // Adicionado configuração balanceada contra travamento por satélite demorado
       const posicao = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       });
@@ -53,10 +51,10 @@ export default function MapaCliente() {
         setLocalizacao(posicao.coords);
       }
     } catch (error) {
-      console.log("Erro ao obter dados de GPS nativo:", error);
+      console.log("Erro ao obter dados de GPS:", error);
       Alert.alert(
         "Erro de Sinal",
-        "Não foi possível obter a sua posição via GPS. Certifique-se de que a localização do aparelho está ativa."
+        "Não foi possível obter a sua posição via GPS nativo."
       );
     }
   }
@@ -99,12 +97,7 @@ export default function MapaCliente() {
     ];
 
     mapRef.current.fitToCoordinates(coordenadas, {
-      edgePadding: {
-        top: 80,
-        right: 80,
-        bottom: 80,
-        left: 80,
-      },
+      edgePadding: { top: 80, right: 80, bottom: 80, left: 80 },
       animated: true,
     });
   }
@@ -127,7 +120,6 @@ export default function MapaCliente() {
 
   return (
     <View style={styles.container}>
-      {/* ATENÇÃO: Deixado SEM a propriedade provider={PROVIDER_GOOGLE} de propósito */}
       <MapView
         ref={mapRef}
         style={styles.mapa}
@@ -137,23 +129,16 @@ export default function MapaCliente() {
           latitudeDelta: 0.02,
           longitudeDelta: 0.02,
         }}
-        showsUserLocation={false}
       >
-        {/* Marcador do Usuário */}
         <Marker
           coordinate={{
             latitude: localizacao.latitude,
             longitude: localizacao.longitude,
           }}
           title="Você está aqui"
-          description="Sua localização atual"
-        >
-          <View style={styles.usuarioMarker}>
-            <View style={styles.usuarioPonto} />
-          </View>
-        </Marker>
+          pinColor="#E76F51" 
+        />
 
-        {/* Marcadores de Imóveis Consolidados (Sem duplicações na View) */}
         {imoveis.map((item) => {
           const isVisitado = visitados.includes(item.id);
 
@@ -166,35 +151,18 @@ export default function MapaCliente() {
               }}
               title={item.titulo}
               description={item.descricao}
+              pinColor={isVisitado ? "green" : "tomato"}
               onPress={() =>
                 router.push({
                   pathname: "/cliente/detalhesImovel",
                   params: { id: item.id, titulo: item.titulo },
                 })
               }
-            >
-              <View style={[styles.imovelMarker, isVisitado && styles.visitadoMarker]}>
-                {isVisitado ? (
-                  <View style={styles.checkContainer}>
-                    <MaterialIcons name="check" size={18} color="#FFFFFF" />
-                  </View>
-                ) : (
-                  <Image
-                    source={{
-                      uri: item.fotos?.[0] || "https://images.unsplash.com/photo-1568605114967-8130f3a36994",
-                    }}
-                    style={styles.imagemPin}
-                  />
-                )}
-
-                {!isVisitado && <View style={styles.setaBaixo} />}
-              </View>
-            </Marker>
+            />
           );
         })}
       </MapView>
 
-      {/* Botão de Atualizar Tela */}
       <View style={styles.botaoContainer}>
         <Pressable 
           style={({ pressed }) => [styles.botaoAtualizar, pressed && styles.botaoPressionado]} 
@@ -233,45 +201,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#1B263B",
   },
-  usuarioMarker: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  usuarioPonto: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: "#E76F51",
-    borderWidth: 3,
-    borderColor: "#FFFFFF",
-    shadowColor: "#000",
-    shadowOpacity: 0.25,
-    shadowRadius: 3,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 5,
-  },
-  imovelMarker: {
-    alignItems: "center",
-  },
-  imagemPin: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    borderWidth: 3,
-    borderColor: "#1B263B",
-    backgroundColor: "#FFF",
-  },
-  setaBaixo: {
-    width: 0,
-    height: 0,
-    borderLeftWidth: 8,
-    borderRightWidth: 8,
-    borderTopWidth: 12,
-    borderLeftColor: "transparent",
-    borderRightColor: "transparent",
-    borderTopColor: "#1B263B",
-    marginTop: -2,
-  },
   botaoContainer: {
     position: "absolute",
     bottom: 32,
@@ -293,19 +222,5 @@ const styles = StyleSheet.create({
   botaoPressionado: {
     opacity: 0.85,
     transform: [{ scale: 0.96 }],
-  },
-  checkContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#2E7D32",
-    borderWidth: 3,
-    borderColor: "#FFFFFF",
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 3,
-  },
-  visitadoMarker: {
-    opacity: 0.75,
   },
 });
