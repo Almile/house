@@ -21,13 +21,20 @@
         "foregroundImage": "./assets/icone.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.almile.house"
     },
     "web": {
       "favicon": "./assets/icone.png"
     },
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "7fb11c32-f058-42f1-be46-3ef41a77295c"
+      }
+    }
   }
 }
